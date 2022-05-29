@@ -1,10 +1,12 @@
-use std::env;
+extern crate dotenv;
 
+use dotenv::dotenv;
 use serenity::async_trait;
-use serenity::prelude::*;
-use serenity::model::channel::Message;
 use serenity::framework::standard::macros::{command, group};
-use serenity::framework::standard::{StandardFramework, CommandResult};
+use serenity::framework::standard::{CommandResult, StandardFramework};
+use serenity::model::channel::Message;
+use serenity::prelude::*;
+use std::env;
 
 #[group]
 #[commands(ping)]
@@ -17,6 +19,7 @@ impl EventHandler for Handler {}
 
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("~")) // set the bot's prefix to "~"
         .group(&GENERAL_GROUP);
