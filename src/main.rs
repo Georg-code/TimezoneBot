@@ -7,7 +7,11 @@ use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group};
 use serenity::framework::standard::{CommandResult, StandardFramework};
 use serenity::model::channel::Message;
+
+use serenity::model::prelude::Ready;
+
 use serenity::model::id::EmojiId;
+
 use serenity::prelude::*;
 use std::env;
 use serenity::model::prelude::ReactionType;
@@ -21,8 +25,16 @@ struct General;
 
 struct Handler;
 
+
+
 #[async_trait]
-impl EventHandler for Handler {}
+impl EventHandler for Handler {
+    async fn message(&self, ctx: Context, msg: Message) {
+        if msg.author.id == 246941577904128000 {
+            msg.reply(&ctx, "Dieser Benutzer stinkt").await.unwrap();
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() {
@@ -46,7 +58,7 @@ async fn main() {
     }
 }
 
-#[command]
+
 async fn time(ctx: &Context, msg: &Message) -> CommandResult {
     let naive_time: NaiveTime = msg.timestamp.with_timezone(&Tokyo).time();
 
@@ -62,6 +74,7 @@ async fn time(ctx: &Context, msg: &Message) -> CommandResult {
 
     Ok(())
 }
+
 
 enum DigitType {
     HourTen,
@@ -104,3 +117,4 @@ enum DigitType {
 //             2 => ReactionType::Unicode("🇨".to_string()),
 //     }
 // }
+
