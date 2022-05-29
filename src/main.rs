@@ -1,15 +1,22 @@
 extern crate dotenv;
+extern crate chrono;
+extern crate chrono_tz;
 
 use dotenv::dotenv;
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group};
 use serenity::framework::standard::{CommandResult, StandardFramework};
 use serenity::model::channel::Message;
+use serenity::model::id::EmojiId;
 use serenity::prelude::*;
 use std::env;
+use serenity::model::prelude::ReactionType;
+
+use chrono::{NaiveTime, Timelike};
+use chrono_tz::Asia::Tokyo;
 
 #[group]
-#[commands(ping)]
+#[commands(time)]
 struct General;
 
 struct Handler;
@@ -40,8 +47,60 @@ async fn main() {
 }
 
 #[command]
-async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
-    msg.reply(ctx, "Pong!").await?;
+async fn time(ctx: &Context, msg: &Message) -> CommandResult {
+    let naive_time: NaiveTime = msg.timestamp.with_timezone(&Tokyo).time();
+
+    msg.reply(ctx, naive_time.hour()).await?;
+    msg.reply(ctx, naive_time.minute()).await?;
+
+    for (emoji_id, emoji) in msg.guild(ctx).unwrap().emojis {
+        if emoji.name == "a1" {
+            msg.react(ctx, emoji).await?;
+            break;
+        }
+    } 
 
     Ok(())
 }
+
+enum DigitType {
+    HourTen,
+    HourOne,
+    MinuteTen,
+    MinuteOne,
+}
+
+// fn get_digit_emote(digit: i32, digit_type: DigitType) -> ReactionType {
+//     match digit_type {
+//         DigitType::HourTen => match digit {
+//             0 => ReactionType::Unicode("🇰".to_string()),
+//             1 => ReactionType::Unicode("🇱".to_string()),
+//             2 => ReactionType::Unicode("🇲".to_string()),
+//             3 => ReactionType::Unicode("🇳".to_string()),
+//             4 => ReactionType::Unicode("🇴".to_string()),
+//             5 => ReactionType::Unicode("🇵".to_string()),
+//             6 => ReactionType::Unicode("🇶".to_string()),
+//             7 => ReactionType::Unicode("🇷".to_string()),
+//             8 => ReactionType::Unicode("🇸".to_string()),
+//             9 => ReactionType::Unicode("🇹".to_string()),
+//             _ => ReactionType::Unicode("🇺".to_string()),
+//         },
+//         DigitType::HourOne => match digit {
+//             0 => ReactionType::Unicode("🇦".to_string()),
+//             1 => ReactionType::Unicode("🇧".to_string()),
+//             2 => ReactionType::Unicode("🇨".to_string()),
+//             3 => ReactionType::Unicode("🇩".to_string()),
+//             4 => ReactionType::Unicode("🇪".to_string()),
+//             5 => ReactionType::Unicode("🇫".to_string()),
+//             6 => ReactionType::Unicode("🇬".to_string()),
+//             7 => ReactionType::Unicode("🇭".to_string()),
+//             8 => ReactionType::Unicode("🇮".to_string()),
+//             9 => ReactionType::Unicode("🇯".to_string()),
+//             _ => ReactionType::Unicode("🇰".to_string()),
+//         },
+//         DigitType::MinuteTen => match digit {
+//             0 => ReactionType::Unicode("🇦".to_string()),
+//             1 => ReactionType::Unicode("🇧".to_string()),
+//             2 => ReactionType::Unicode("🇨".to_string()),
+//     }
+// }
