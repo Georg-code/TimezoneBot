@@ -1,5 +1,6 @@
 use std::ops::Add;
 
+use chrono::{NaiveTime, Timelike};
 use serenity::model::{channel::ReactionType, guild::Guild};
 
 pub enum DigitType {
@@ -52,4 +53,17 @@ pub fn get_digit_emote(guild: &Guild, digit: u32, digit_type: &DigitType) -> Opt
             None
         }
     };
+}
+
+pub fn digits_from_naive_time(time: &NaiveTime) -> (u32, u32, u32, u32) {
+    let hour = time.hour();
+    let minute = time.minute();
+
+    let hour_ten = hour / 10;
+    let hour_one = hour % 10;
+
+    let minute_ten = minute / 10;
+    let minute_one = minute % 10;
+
+    (hour_ten, hour_one, minute_ten, minute_one)
 }
