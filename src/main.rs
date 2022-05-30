@@ -3,12 +3,8 @@ extern crate chrono_tz;
 extern crate dotenv;
 
 use dotenv::dotenv;
-use serenity::async_trait;
-use serenity::framework::standard::macros::{command, group};
-use serenity::framework::standard::{CommandResult, StandardFramework};
-use serenity::model::channel::Message;
-
-use serenity::model::gateway::Ready;
+use serenity::framework::standard::macros::group;
+use serenity::framework::standard::StandardFramework;
 use serenity::prelude::*;
 use std::env;
 
@@ -16,9 +12,8 @@ mod commands;
 mod digit_emotes;
 mod event_handler;
 
-use commands::time::display_time;
+use commands::time::TIME_COMMAND;
 use event_handler::Handler;
-
 #[group]
 #[commands(time)]
 struct General;
@@ -43,10 +38,4 @@ async fn main() {
     if let Err(why) = client.start().await {
         println!("An error occurred while running the client: {:?}", why);
     }
-}
-
-#[command]
-pub async fn time(ctx: &Context, msg: &Message) -> CommandResult {
-    display_time(ctx, msg).await?;
-    Ok(())
 }

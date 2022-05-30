@@ -7,6 +7,12 @@ use serenity::framework::standard::CommandResult;
 use serenity::model::channel::Message;
 use serenity::model::prelude::ReactionType;
 
+#[command]
+pub async fn time(ctx: &Context, msg: &Message) -> CommandResult {
+    display_time(ctx, msg).await?;
+    Ok(())
+}
+
 pub async fn display_time(ctx: &Context, msg: &Message) -> CommandResult {
     let naive_time = msg.timestamp.with_timezone(&Tokyo).time();
 
