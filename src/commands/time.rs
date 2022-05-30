@@ -3,7 +3,7 @@ use crate::digit_emotes::{get_digit_emote, DigitType};
 use chrono_tz::Asia::Tokyo;
 use serenity::client::Context;
 use serenity::framework::standard::macros::command;
-use serenity::framework::standard::CommandResult;
+use serenity::framework::standard::{CommandError, CommandResult};
 use serenity::model::channel::Message;
 use serenity::model::prelude::ReactionType;
 
@@ -28,7 +28,10 @@ pub async fn display_time(ctx: &Context, msg: &Message) -> CommandResult {
 
 // this function reacts to a message with the time using the specified digits
 async fn react_time(ctx: &Context, msg: &Message, a: u32, b: u32, c: u32, d: u32) -> CommandResult {
-    let guild = msg.guild(ctx).unwrap();
+    let guild = match msg.guild(ctx) {
+        Some(g) => g,
+        None => return Err(CommandError::from("Could not get guild")),
+    };
 
     let mut emojis: Vec<ReactionType> = Vec::new();
 
@@ -54,7 +57,7 @@ async fn react_time(ctx: &Context, msg: &Message, a: u32, b: u32, c: u32, d: u32
 
     // react to the message with the emojis
     for emoji in emojis.into_iter() {
-        msg.react(ctx, emoji).await.unwrap();
+        msg.react(ctx, emoji).await?;
     }
 
     Ok(())

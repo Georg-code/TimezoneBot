@@ -37,7 +37,7 @@ impl EventHandler for Handler {
     // called when a reaction is added to a message
     async fn reaction_add(&self, ctx: Context, reaction: Reaction) {
         let emoji = reaction.emoji.to_string();
-        let message = reaction.message(&ctx).await.unwrap();
+        let message = reaction.message(&ctx).await.unwrap(); // Try to not use unwrap() Hohi, use match instead;
         message.delete_reactions(&ctx);
     }
 }
