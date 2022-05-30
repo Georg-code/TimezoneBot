@@ -3,6 +3,7 @@ use std::ops::Add;
 use chrono::{NaiveTime, Timelike};
 use serenity::model::{channel::ReactionType, guild::Guild};
 
+// enum for the different digits / emote-groups
 pub enum DigitType {
     HourTen,
     HourOne,
@@ -10,13 +11,16 @@ pub enum DigitType {
     MinuteOne,
 }
 
+// returns the emote for a given digit
 pub fn get_digit_emote(guild: &Guild, digit: u32, digit_type: &DigitType) -> Option<ReactionType> {
+    // returns if the digit is invalid
     if digit > 9 {
         println!("Digit must be between 0 and 9");
         return None;
     }
 
     return match digit_type {
+        // minute one digit uses the default emotes
         DigitType::MinuteOne => Some(ReactionType::Unicode(match digit {
             0 => "0️⃣".to_string(),
             1 => "1️⃣".to_string(),
@@ -31,6 +35,8 @@ pub fn get_digit_emote(guild: &Guild, digit: u32, digit_type: &DigitType) -> Opt
             _ => "".to_string(),
         })),
         _ => {
+            // the rest of the digits use custom emotes
+            // first the name of the custom emote is constructed
             let name = match digit_type {
                 DigitType::HourTen => "a",
                 DigitType::HourOne => "b",
@@ -40,21 +46,22 @@ pub fn get_digit_emote(guild: &Guild, digit: u32, digit_type: &DigitType) -> Opt
             .to_string()
             .add(&digit.to_string());
 
-            // println!("name: {}", name);
+            // the guild emotes are retrieved and filtered
+            // TODO: this is a bit ugly, replace it with a filter function
             for (_, emoji) in &guild.emojis {
-                // println!("{:#?}", emoji);
-                // println!("{}", emoji.name == name);
-
                 if emoji.name == name {
+                    // the emote is converted to a reaction type and returned
                     return Some(ReactionType::from(emoji.to_owned()));
                 }
             }
 
+            // if the emote is not found, None is returned
             None
         }
     };
 }
 
+// splits a NaiveTime into its unique digits and returns it as a Tuple
 pub fn digits_from_naive_time(time: &NaiveTime) -> (u32, u32, u32, u32) {
     let hour = time.hour();
     let minute = time.minute();
