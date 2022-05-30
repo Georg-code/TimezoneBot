@@ -1,7 +1,11 @@
 use serenity::{
     async_trait,
     client::{Context, EventHandler},
-    model::{channel::Message, gateway::Ready},
+    http::{CacheHttp, self},
+    model::{
+        channel::{Message, Reaction},
+        gateway::Ready,
+    },
 };
 
 use crate::commands::time::display_time;
@@ -21,5 +25,11 @@ impl EventHandler for Handler {
                 Err(e) => println!("{}", e),
             };
         }
+    }
+    async fn reaction_add(&self, ctx: Context, reaction: Reaction) {
+        let emoji = reaction.emoji.to_string();
+        let message = reaction.message(ctx).await.unwrap();
+        message.delete_reactions(ctx);
+
     }
 }
