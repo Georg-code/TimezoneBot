@@ -16,7 +16,9 @@ mod digit_emotes;
 mod event_handler;
 
 // imports from module tree
+// import commands
 use commands::time::TIME_COMMAND;
+// import event handler
 use event_handler::Handler;
 
 // general struct: more documentation needed
