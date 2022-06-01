@@ -79,13 +79,32 @@ async fn react_time(ctx: &Context, msg: &Message, a: u32, b: u32, c: u32, d: u32
     // oaoao okay seems like I wasn't able to get this to work
     // guess well just do it the functional way
 
-    join_all(
-        emojis
-            .into_iter()
-            .map(|e| msg.react(ctx, e))
-            .collect::<Vec<_>>(),
-    )
-    .await;
+    // join_all(
+    //     emojis
+    //         .into_iter()
+    //         .map(|e| msg.react(ctx, e))
+    //         .collect::<Vec<_>>(),
+    // )
+    // .await;
+
+    // 😢
+
+    // loop over the digits and retrieve the corresponding emotes
+    for digit in digits.iter() {
+        match get_digit_emote(&guild, digit.0, &digit.1) {
+            Some(emoji) => {
+                emojis.push(emoji);
+            }
+            None => {
+                println!("No emoji found for digit {}", digit.0);
+            }
+        }
+    }
+
+    // react to the message with the emojis
+    for emoji in emojis.into_iter() {
+        msg.react(ctx, emoji).await?;
+    }
 
     Ok(())
 }

@@ -1,9 +1,16 @@
+use std::{
+    alloc::System,
+    time::{SystemTime, UNIX_EPOCH},
+};
+
 use serenity::{
     async_trait,
     client::{Context, EventHandler},
+    framework::standard::CommandResult,
+    futures::{future::try_join_all, stream::TryTakeWhile},
     http::{self, CacheHttp},
     model::{
-        channel::{Message, Reaction},
+        channel::{Message, MessageReaction, Reaction},
         gateway::Ready,
         id::MessageId,
     },
@@ -46,12 +53,12 @@ impl EventHandler for Handler {
         let message = reaction
             .message(&ctx)
             .await
-            .expect("could not get reactuib"); // Try to not use unwrap() Hohi, use match instead or expect to get an error message;
+            .expect("could not get reaction"); // Try to not use unwrap() Hohi, use match instead or expect to get an error message;
         message.delete_reactions(&ctx);
     }
 }
 
-async fn message_grouping_test(ctx: &Context, msg: &Message) {
+async fn message_grouping_test(ctx: &Context, msg: &Message) -> CommandResult {
     let guild_channel = msg
         .channel(&ctx)
         .await
@@ -73,13 +80,39 @@ async fn message_grouping_test(ctx: &Context, msg: &Message) {
 
     println!("{:?}", last_messages.len());
 
-    for message in last_messages {
+    let mut to_delete: Vec<(&Message, &MessageReaction)> = Vec::new();
+
+    for message in last_messages.iter() {
         for reaction in message.reactions.iter() {
             if reaction.me {
-                message
-                    .delete_reaction_emoji(ctx, reaction.reaction_type.to_owned())
-                    .await;
+                to_delete.push((message, reaction));
             }
         }
     }
+
+    println!("to delete: {:?}", to_delete.len());
+
+    let st = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_millis();
+
+    let passed_time = || {
+        let et = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_millis();
+
+        et - st
+    };
+
+    try_join_all(to_delete.into_iter().map(|(m, r)| {
+        let f = m.delete_reaction_emoji(ctx, r.reaction_type.to_owned());
+        println!("time passed: {}ms", passed_time());
+
+        return f;
+    }))
+    .await?;
+
+    Ok(())
 }
