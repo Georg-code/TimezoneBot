@@ -34,28 +34,42 @@ impl EventHandler for Handler {
             };
         };
 
-        println!("{}", msg.channel(&ctx).await.unwrap());
+        println!(
+            "{}",
+            msg.channel(&ctx).await.expect("Could not get channel")
+        );
     }
 
     // called when a reaction is added to a message
     async fn reaction_add(&self, ctx: Context, reaction: Reaction) {
         let emoji = reaction.emoji.to_string();
-        let message = reaction.message(&ctx).await.unwrap(); // Try to not use unwrap() Hohi, use match instead;
+        let message = reaction
+            .message(&ctx)
+            .await
+            .expect("could not get reactuib"); // Try to not use unwrap() Hohi, use match instead or expect to get an error message;
         message.delete_reactions(&ctx);
     }
 }
 
 async fn message_grouping_test(ctx: &Context, msg: &Message) {
-    let guild_channel = msg.channel(&ctx).await.unwrap().guild().unwrap();
+    let guild_channel = msg
+        .channel(&ctx)
+        .await
+        .expect("could not get channel")
+        .guild()
+        .expect("could not get guild channel");
 
-    let last_message_id = guild_channel.last_message_id.unwrap().0;
+    let last_message_id = guild_channel
+        .last_message_id
+        .expect("could not get last message id")
+        .0;
 
     let last_messages = guild_channel
         .messages(ctx, |retriever| {
             retriever.after(MessageId(last_message_id)).limit(5)
         })
         .await
-        .unwrap();
+        .expect("could not get messages");
 
     println!("{:?}", last_messages.len());
 
