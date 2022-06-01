@@ -4,6 +4,7 @@ use chrono_tz::Asia::Tokyo;
 use serenity::client::Context;
 use serenity::framework::standard::macros::command;
 use serenity::framework::standard::{CommandError, CommandResult};
+use serenity::futures::future::join_all;
 use serenity::model::channel::Message;
 use serenity::model::prelude::ReactionType;
 
@@ -55,10 +56,36 @@ async fn react_time(ctx: &Context, msg: &Message, a: u32, b: u32, c: u32, d: u32
         }
     }
 
-    // react to the message with the emojis
-    for emoji in emojis.into_iter() {
-        msg.react(ctx, emoji).await?;
-    }
+    // I now finally understand why this type declaration must look like this
+    // so a future will return a value sometime in the future
+    // in rust there isn't one single type of future so it is implemented as a trait
+    // this means any type can implement the trait and then be used as a future
+    // that however also means that objects that implement future (short future) may have different size
+    // the keyword dyn is used to specify that the type is a trait and therefore dynamic aka: its size is not known at compile time
+    // the size of a value on the stack must always be known to be allocated
+    // Box<T> is a smart pointer that allocates the value on the heap and stores the pointer itself on the stack
+    // by wrapping it in a Box<T> we can ensure it will always have the same size and can therefore be stored in a vector
+    // Therefore we need a Vec<Box<dyn Future<Output = T>>>
+
+    // let mut msg_futures: Vec<Pin<Box<dyn Future<Output = Result<Reaction, Error>>>>> = Vec::new();
+
+    // // react to the message with the emojis
+    // for emoji in emojis.into_iter() {
+    //     msg_futures.push(Box::pin(msg.react(ctx, emoji)));
+    // }
+
+    // let a = try_join_all(msg_futures).await?;
+
+    // oaoao okay seems like I wasn't able to get this to work
+    // guess well just do it the functional way
+
+    join_all(
+        emojis
+            .into_iter()
+            .map(|e| msg.react(ctx, e))
+            .collect::<Vec<_>>(),
+    )
+    .await;
 
     Ok(())
 }
